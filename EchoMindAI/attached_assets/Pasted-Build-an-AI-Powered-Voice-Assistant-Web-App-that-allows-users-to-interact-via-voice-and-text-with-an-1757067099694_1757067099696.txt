@@ -1,0 +1,85 @@
+Build an AI-Powered Voice Assistant Web App that allows users to interact via voice and text with an AI assistant powered by the ChatGPT API. The assistant should listen to the user’s queries, process them, and respond back in natural voice. Users should also have a personalized dashboard where they can view past conversations, set reminders, manage tasks, and integrate with external APIs (like weather, news, or calendar).
+
+🔑 Core Features
+
+Voice Input & Output
+
+🎙️ Speech-to-Text (using Web Speech API or a library like react-speech-recognition)
+
+🔊 Text-to-Speech for AI responses (using browser SpeechSynthesis API or external TTS APIs)
+
+ChatGPT Integration
+
+User queries are sent to ChatGPT API.
+
+Responses come back and are spoken aloud + displayed on screen.
+
+User Authentication & Profiles (Full-Stack)
+
+Login/Signup with JWT (Node.js + Express + MongoDB).
+
+Each user has a personalized dashboard.
+
+Conversation History
+
+Save past chats in MongoDB (per user).
+
+Show them in a timeline UI with search functionality.
+
+🌟 Standout Features (to make it unique)
+
+Task & Reminder Manager 📝
+
+Users can say: “Remind me to call mom at 7 pm”.
+
+Store in DB + use node-cron for reminders (pop-up + voice notification).
+
+Smart Integrations 🌍
+
+Weather API → Ask “What’s the weather today?”
+
+News API → “Give me top 3 tech headlines.”
+
+Calendar API → “Add meeting at 10 am tomorrow.”
+
+Multimodal Responses 🎨
+
+If user asks for charts or data visualization → Show graphs using Recharts/Chart.js.
+
+Example: “Show me my weekly study hours as a chart.”
+
+Custom Personalities / Modes 🎭
+
+User can choose assistant’s personality (Friendly, Professional, Funny).
+
+Store preference in DB.
+
+Offline Mode (Lite) 🔌
+
+For voice-to-text & text-to-speech, allow local browser APIs so basic interaction works even when API is offline.
+
+🛠️ Tech Stack Suggestion
+
+Frontend: React + TailwindCSS + Web Speech API
+
+Backend: Node.js + Express
+
+Database: MongoDB
+
+APIs: ChatGPT API, OpenWeather, NewsAPI, Google Calendar API
+
+Auth: JWT + bcrypt
+
+🌐 Example Use-Case Flow
+
+User logs in.
+
+Speaks: “Hey, what’s the weather in Ghaziabad today?”
+
+Voice → STT → Send to ChatGPT API + Weather API → Response created.
+
+Assistant replies: “It’s 32°C and sunny today in Ghaziabad 🌞.” (spoken + displayed).
+
+User: “Remind me to revise Java at 9 pm.”
+
+Reminder stored → Notification + voice alert at 9 pm.

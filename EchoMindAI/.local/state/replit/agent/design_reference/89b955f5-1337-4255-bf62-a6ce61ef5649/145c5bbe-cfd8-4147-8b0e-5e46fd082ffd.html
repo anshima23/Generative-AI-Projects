@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Assistant - Your Personal Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          borderRadius: {
+            lg: "var(--radius)",
+            md: "calc(var(--radius) - 2px)",
+            sm: "calc(var(--radius) - 4px)",
+          },
+          colors: {
+            background: "var(--background)",
+            foreground: "var(--foreground)",
+            card: {
+              DEFAULT: "var(--card)",
+              foreground: "var(--card-foreground)",
+            },
+            popover: {
+              DEFAULT: "var(--popover)",
+              foreground: "var(--popover-foreground)",
+            },
+            primary: {
+              DEFAULT: "var(--primary)",
+              foreground: "var(--primary-foreground)",
+            },
+            secondary: {
+              DEFAULT: "var(--secondary)",
+              foreground: "var(--secondary-foreground)",
+            },
+            muted: {
+              DEFAULT: "var(--muted)",
+              foreground: "var(--muted-foreground)",
+            },
+            accent: {
+              DEFAULT: "var(--accent)",
+              foreground: "var(--accent-foreground)",
+            },
+            destructive: {
+              DEFAULT: "var(--destructive)",
+              foreground: "var(--destructive-foreground)",
+            },
+            border: "var(--border)",
+            input: "var(--input)",
+            ring: "var(--ring)",
+          },
+          fontFamily: {
+            sans: ["var(--font-sans)", "Inter", "system-ui", "sans-serif"],
+          }
+        },
+      }
+    };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --background: hsl(220 20% 98%);
+            --foreground: hsl(220 10% 15%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(220 10% 15%);
+            --popover: hsl(0 0% 100%);
+            --popover-foreground: hsl(220 10% 15%);
+            --primary: hsl(245 60% 62%);
+            --primary-foreground: hsl(0 0% 100%);
+            --secondary: hsl(220 15% 95%);
+            --secondary-foreground: hsl(220 10% 20%);
+            --muted: hsl(220 15% 96%);
+            --muted-foreground: hsl(220 10% 40%);
+            --accent: hsl(150 60% 50%);
+            --accent-foreground: hsl(0 0% 100%);
+            --destructive: hsl(0 70% 60%);
+            --destructive-foreground: hsl(0 0% 100%);
+            --border: hsl(220 15% 90%);
+            --input: hsl(220 15% 95%);
+            --ring: hsl(245 60% 62%);
+            --radius: 0.75rem;
+            --font-sans: "Inter";
+        }
+        
+        .dark {
+            --background: hsl(220 25% 6%);
+            --foreground: hsl(220 10% 95%);
+            --card: hsl(220 25% 8%);
+            --card-foreground: hsl(220 10% 95%);
+            --popover: hsl(220 25% 8%);
+            --popover-foreground: hsl(220 10% 95%);
+            --primary: hsl(245 60% 65%);
+            --primary-foreground: hsl(220 25% 6%);
+            --secondary: hsl(220 25% 10%);
+            --secondary-foreground: hsl(220 10% 80%);
+            --muted: hsl(220 25% 10%);
+            --muted-foreground: hsl(220 10% 60%);
+            --accent: hsl(150 60% 55%);
+            --accent-foreground: hsl(220 25% 6%);
+            --destructive: hsl(0 70% 65%);
+            --destructive-foreground: hsl(220 25% 6%);
+            --border: hsl(220 25% 15%);
+            --input: hsl(220 25% 10%);
+            --ring: hsl(245 60% 65%);
+        }
+
+        .pulse-ring {
+            animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .voice-wave {
+            animation: voice-wave 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes voice-wave {
+            0% { height: 4px; }
+            100% { height: 20px; }
+        }
+
+        .typing-indicator {
+            animation: typing 1.5s ease-in-out infinite;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        .slide-in-right {
+            animation: slide-in-right 0.3s ease-out;
+        }
+
+        @keyframes slide-in-right {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .chat-bubble-user {
+            background: linear-gradient(135deg, hsl(245 60% 62%) 0%, hsl(245 60% 58%) 100%);
+        }
+
+        .chat-bubble-assistant {
+            background: linear-gradient(135deg, hsl(220 15% 96%) 0%, hsl(220 15% 94%) 100%);
+        }
+
+        .dark .chat-bubble-assistant {
+            background: linear-gradient(135deg, hsl(220 25% 10%) 0%, hsl(220 25% 8%) 100%);
+        }
+    </style>
+</head>
+<body class="h-full bg-background text-foreground font-sans antialiased">
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- @COMPONENT: Sidebar [Navigation and conversation history] -->
+        <!-- Sidebar -->
+        <div id="sidebar" class="hidden lg:flex lg:w-80 bg-card border-r border-border flex-col">
+            <!-- Header -->
+            <div class="p-6 border-b border-border">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fas fa-robot text-primary-foreground text-sm"></i>
+                        </div>
+                        <h1 class="text-lg font-semibold text-foreground">VoiceAI</h1>
+                    </div>
+                    <button class="p-2 hover:bg-secondary rounded-lg transition-colors" data-implementation="Toggle dark mode">
+                        <i class="fas fa-moon text-muted-foreground"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- User Profile -->
+            <div class="p-6 border-b border-border">
+                <div class="flex items-center space-x-3">
+                    <!-- Professional headshot of a friendly person smiling -->
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=150&h=150" 
+                         alt="User profile" 
+                         class="w-10 h-10 rounded-full object-cover" 
+                         data-mock-image="true" 
+                         data-implementation="Replace with user's actual profile photo" />
+                    <div>
+                        <p class="font-medium text-foreground" data-bind="user.name" data-mock="true">Alex Johnson</p>
+                        <p class="text-sm text-muted-foreground" data-mock="true">Premium Plan</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="p-6 space-y-2">
+                <h3 class="text-sm font-medium text-muted-foreground mb-3">QUICK ACTIONS</h3>
+                <button class="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-secondary transition-colors text-left" data-event="click:createNewConversation">
+                    <i class="fas fa-plus w-4 h-4 text-muted-foreground"></i>
+                    <span class="text-sm text-foreground">New Conversation</span>
+                </button>
+                <button class="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-secondary transition-colors text-left" data-event="click:openTaskManager">
+                    <i class="fas fa-tasks w-4 h-4 text-muted-foreground"></i>
+                    <span class="text-sm text-foreground">View Tasks</span>
+                </button>
+                <button class="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-secondary transition-colors text-left" data-event="click:openReminders">
+                    <i class="fas fa-bell w-4 h-4 text-muted-foreground"></i>
+                    <span class="text-sm text-foreground">Reminders</span>
+                </button>
+                <button class="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-secondary transition-colors text-left" data-event="click:openSettings">
+                    <i class="fas fa-cog w-4 h-4 text-muted-foreground"></i>
+                    <span class="text-sm text-foreground">Settings</span>
+                </button>
+            </div>
+
+            <!-- Conversation History -->
+            <div class="flex-1 p-6 overflow-y-auto">
+                <h3 class="text-sm font-medium text-muted-foreground mb-3">RECENT CONVERSATIONS</h3>
+                <div class="space-y-2">
+                    <!-- @MAP: conversations.map(conversation => ( -->
+                    <div class="p-3 rounded-lg hover:bg-secondary transition-colors cursor-pointer group" data-event="click:loadConversation" data-mock="true">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-foreground truncate" data-bind="conversation.title">Weather in Ghaziabad</p>
+                                <p class="text-xs text-muted-foreground truncate mt-1" data-bind="conversation.lastMessage">It's 32°C and sunny today...</p>
+                            </div>
+                            <span class="text-xs text-muted-foreground ml-2" data-bind="conversation.time">2h</span>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-lg hover:bg-secondary transition-colors cursor-pointer group" data-mock="true">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-foreground truncate">Java Revision Reminder</p>
+                                <p class="text-xs text-muted-foreground truncate mt-1">I'll remind you to revise Java at 9 PM</p>
+                            </div>
+                            <span class="text-xs text-muted-foreground ml-2">5h</span>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-lg hover:bg-secondary transition-colors cursor-pointer group" data-mock="true">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-foreground truncate">Tech News Headlines</p>
+                                <p class="text-xs text-muted-foreground truncate mt-1">Here are today's top tech stories...</p>
+                            </div>
+                            <span class="text-xs text-muted-foreground ml-2">1d</span>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-lg hover:bg-secondary transition-colors cursor-pointer group" data-mock="true">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-foreground truncate">Meeting Schedule</p>
+                                <p class="text-xs text-muted-foreground truncate mt-1">I've added the meeting to your calendar</p>
+                            </div>
+                            <span class="text-xs text-muted-foreground ml-2">2d</span>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent [Chat interface and dashboard] -->
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col">
+            <!-- Top Bar -->
+            <div class="bg-card border-b border-border p-4 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button class="lg:hidden p-2 hover:bg-secondary rounded-lg" data-event="click:toggleSidebar">
+                        <i class="fas fa-bars text-muted-foreground"></i>
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-accent rounded-full"></div>
+                        <span class="text-sm font-medium text-foreground">Assistant Active</span>
+                    </div>
+                </div>
+                
+                <!-- Voice Status Indicator -->
+                <div class="flex items-center space-x-4">
+                    <div id="voiceStatus" class="flex items-center space-x-2 px-3 py-2 bg-muted rounded-lg" data-implementation="Show current voice status">
+                        <div class="flex space-x-1">
+                            <div class="w-1 h-4 bg-muted-foreground rounded-full voice-wave" style="animation-delay: 0s;"></div>
+                            <div class="w-1 h-4 bg-muted-foreground rounded-full voice-wave" style="animation-delay: 0.1s;"></div>
+                            <div class="w-1 h-4 bg-muted-foreground rounded-full voice-wave" style="animation-delay: 0.2s;"></div>
+                            <div class="w-1 h-4 bg-muted-foreground rounded-full voice-wave" style="animation-delay: 0.3s;"></div>
+                        </div>
+                        <span class="text-xs text-muted-foreground" data-mock="true">Listening...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div class="flex-1 flex">
+                <!-- Chat Messages -->
+                <div class="flex-1 flex flex-col">
+                    <!-- Messages Area -->
+                    <div id="messagesArea" class="flex-1 overflow-y-auto p-6 space-y-6" data-implementation="Scroll to bottom on new messages">
+                        
+                        <!-- Welcome Message -->
+                        <div class="flex justify-center">
+                            <div class="text-center max-w-2xl">
+                                <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-robot text-primary-foreground text-xl"></i>
+                                </div>
+                                <h2 class="text-2xl font-semibold text-foreground mb-2" data-mock="true">Hi Alex! I'm your AI assistant</h2>
+                                <p class="text-muted-foreground mb-6" data-mock="true">You can speak or type to interact with me. I can help you with weather, news, tasks, reminders, and much more!</p>
+                                
+                                <!-- Quick Suggestions -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <button class="p-4 bg-card border border-border rounded-xl text-left hover:bg-secondary transition-colors" data-event="click:sendQuickMessage" data-message="What's the weather today?">
+                                        <div class="flex items-center space-x-3">
+                                            <i class="fas fa-cloud-sun text-primary w-5 h-5"></i>
+                                            <div>
+                                                <p class="font-medium text-foreground">Weather</p>
+                                                <p class="text-sm text-muted-foreground">Check today's forecast</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button class="p-4 bg-card border border-border rounded-xl text-left hover:bg-secondary transition-colors" data-event="click:sendQuickMessage" data-message="Show me today's tech news">
+                                        <div class="flex items-center space-x-3">
+                                            <i class="fas fa-newspaper text-primary w-5 h-5"></i>
+                                            <div>
+                                                <p class="font-medium text-foreground">News</p>
+                                                <p class="text-sm text-muted-foreground">Latest headlines</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button class="p-4 bg-card border border-border rounded-xl text-left hover:bg-secondary transition-colors" data-event="click:sendQuickMessage" data-message="Set a reminder">
+                                        <div class="flex items-center space-x-3">
+                                            <i class="fas fa-bell text-primary w-5 h-5"></i>
+                                            <div>
+                                                <p class="font-medium text-foreground">Reminder</p>
+                                                <p class="text-sm text-muted-foreground">Schedule a task</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button class="p-4 bg-card border border-border rounded-xl text-left hover:bg-secondary transition-colors" data-event="click:sendQuickMessage" data-message="Add meeting to calendar">
+                                        <div class="flex items-center space-x-3">
+                                            <i class="fas fa-calendar text-primary w-5 h-5"></i>
+                                            <div>
+                                                <p class="font-medium text-foreground">Calendar</p>
+                                                <p class="text-sm text-muted-foreground">Manage events</p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sample Conversation -->
+                        <div class="space-y-6" data-mock="true">
+                            <!-- User Message -->
+                            <div class="flex justify-end">
+                                <div class="max-w-xs lg:max-w-2xl">
+                                    <div class="chat-bubble-user text-primary-foreground rounded-2xl rounded-br-sm px-4 py-3 shadow-sm">
+                                        <p class="text-sm">Hey, what's the weather in Ghaziabad today?</p>
+                                    </div>
+                                    <div class="flex items-center justify-end space-x-2 mt-2">
+                                        <i class="fas fa-microphone text-muted-foreground text-xs"></i>
+                                        <span class="text-xs text-muted-foreground">Voice • 2:34 PM</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Assistant Response -->
+                            <div class="flex justify-start">
+                                <div class="max-w-xs lg:max-w-2xl">
+                                    <div class="chat-bubble-assistant border border-border rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+                                        <p class="text-sm text-card-foreground">It's 32°C and sunny today in Ghaziabad! 🌞 Perfect weather for outdoor activities. The humidity is at 45% with light winds from the east at 8 km/h.</p>
+                                        
+                                        <!-- Weather Widget -->
+                                        <div class="mt-3 p-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-xl text-white">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <p class="font-semibold">Ghaziabad</p>
+                                                    <p class="text-sm opacity-90">Sunny</p>
+                                                </div>
+                                                <div class="text-right">
+                                                    <p class="text-2xl font-bold">32°C</p>
+                                                    <p class="text-sm opacity-90">H:35° L:24°</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2 mt-2">
+                                        <i class="fas fa-volume-up text-muted-foreground text-xs"></i>
+                                        <span class="text-xs text-muted-foreground">Spoken • 2:34 PM</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- User Message -->
+                            <div class="flex justify-end">
+                                <div class="max-w-xs lg:max-w-2xl">
+                                    <div class="chat-bubble-user text-primary-foreground rounded-2xl rounded-br-sm px-4 py-3 shadow-sm">
+                                        <p class="text-sm">Remind me to revise Java at 9 PM today</p>
+                                    </div>
+                                    <div class="flex items-center justify-end space-x-2 mt-2">
+                                        <i class="fas fa-microphone text-muted-foreground text-xs"></i>
+                                        <span class="text-xs text-muted-foreground">Voice • 2:35 PM</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Assistant Response -->
+                            <div class="flex justify-start">
+                                <div class="max-w-xs lg:max-w-2xl">
+                                    <div class="chat-bubble-assistant border border-border rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+                                        <p class="text-sm text-card-foreground">Perfect! I've set a reminder for you to revise Java at 9:00 PM today. You'll receive both a notification and a voice alert. 📚</p>
+                                        
+                                        <!-- Task Card -->
+                                        <div class="mt-3 p-3 bg-accent/10 border border-accent/20 rounded-xl">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                                                    <i class="fas fa-bell text-accent-foreground text-xs"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <p class="font-medium text-foreground">Java Revision</p>
+                                                    <p class="text-sm text-muted-foreground">Today at 9:00 PM</p>
+                                                </div>
+                                                <button class="text-muted-foreground hover:text-foreground">
+                                                    <i class="fas fa-times text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2 mt-2">
+                                        <i class="fas fa-volume-up text-muted-foreground text-xs"></i>
+                                        <span class="text-xs text-muted-foreground">Spoken • 2:35 PM</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Typing Indicator -->
+                            <div class="flex justify-start" id="typingIndicator" style="display: none;" data-implementation="Show when assistant is processing">
+                                <div class="max-w-xs lg:max-w-2xl">
+                                    <div class="chat-bubble-assistant border border-border rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+                                        <div class="flex space-x-2">
+                                            <div class="w-2 h-2 bg-muted-foreground rounded-full typing-indicator"></div>
+                                            <div class="w-2 h-2 bg-muted-foreground rounded-full typing-indicator" style="animation-delay: 0.2s;"></div>
+                                            <div class="w-2 h-2 bg-muted-foreground rounded-full typing-indicator" style="animation-delay: 0.4s;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="border-t border-border p-6">
+                        <div class="flex items-end space-x-3">
+                            <div class="flex-1">
+                                <div class="relative">
+                                    <textarea 
+                                        id="messageInput" 
+                                        placeholder="Type your message or click the mic to speak..." 
+                                        class="w-full px-4 py-3 pr-12 bg-input border border-border rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-ring text-foreground placeholder-muted-foreground"
+                                        rows="1"
+                                        data-implementation="Auto-resize textarea, send on Ctrl+Enter"
+                                    ></textarea>
+                                    <button class="absolute right-3 top-3 p-1 text-muted-foreground hover:text-foreground transition-colors" data-event="click:sendMessage">
+                                        <i class="fas fa-paper-plane text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Voice Input Button -->
+                            <div class="relative">
+                                <button 
+                                    id="voiceButton" 
+                                    class="w-12 h-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
+                                    data-event="click:toggleVoiceInput"
+                                    data-implementation="Implement Web Speech API for voice input"
+                                >
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <!-- Pulse rings for active recording -->
+                                <div id="pulseRings" class="absolute inset-0 -z-10" style="display: none;" data-implementation="Show during voice recording">
+                                    <div class="absolute inset-0 bg-primary/30 rounded-full pulse-ring"></div>
+                                    <div class="absolute inset-0 bg-primary/30 rounded-full pulse-ring" style="animation-delay: 0.5s;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Voice Commands Help -->
+                        <div class="mt-3 text-center">
+                            <p class="text-xs text-muted-foreground">
+                                Try: "What's the weather?", "Set a reminder", "Show me news", or "Add to calendar"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Dashboard -->
+                <div class="hidden xl:block w-80 bg-card border-l border-border">
+                    <div class="p-6 h-full overflow-y-auto">
+                        <!-- Dashboard Header -->
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-foreground mb-2">Dashboard</h3>
+                            <p class="text-sm text-muted-foreground">Quick access to your information</p>
+                        </div>
+
+                        <!-- Today's Overview -->
+                        <div class="mb-6">
+                            <div class="bg-gradient-to-r from-primary to-primary/80 rounded-xl p-4 text-primary-foreground">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-medium">Today</h4>
+                                    <i class="fas fa-calendar-day"></i>
+                                </div>
+                                <p class="text-2xl font-bold" data-mock="true">March 15</p>
+                                <p class="text-sm opacity-90" data-mock="true">3 tasks • 2 reminders</p>
+                            </div>
+                        </div>
+
+                        <!-- Quick Weather -->
+                        <div class="mb-6">
+                            <h4 class="font-medium text-foreground mb-3">Current Weather</h4>
+                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white" data-mock="true">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-medium">Ghaziabad</p>
+                                        <p class="text-2xl font-bold">32°C</p>
+                                        <p class="text-sm opacity-90">Sunny</p>
+                                    </div>
+                                    <div class="text-4xl opacity-80">
+                                        <i class="fas fa-sun"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pending Tasks -->
+                        <div class="mb-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-medium text-foreground">Pending Tasks</h4>
+                                <span class="text-xs text-muted-foreground" data-mock="true">3 items</span>
+                            </div>
+                            <div class="space-y-2">
+                                <!-- @MAP: tasks.map(task => ( -->
+                                <div class="flex items-center space-x-3 p-3 bg-secondary rounded-lg" data-mock="true">
+                                    <input type="checkbox" class="w-4 h-4 text-primary border border-border rounded focus:ring-2 focus:ring-ring" data-implementation="Task completion toggle" />
+                                    <div class="flex-1">
+                                        <p class="text-sm text-foreground" data-bind="task.title">Revise Java concepts</p>
+                                        <p class="text-xs text-muted-foreground" data-bind="task.time">9:00 PM</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3 p-3 bg-secondary rounded-lg" data-mock="true">
+                                    <input type="checkbox" class="w-4 h-4 text-primary border border-border rounded focus:ring-2 focus:ring-ring" />
+                                    <div class="flex-1">
+                                        <p class="text-sm text-foreground">Call mom</p>
+                                        <p class="text-xs text-muted-foreground">7:00 PM</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3 p-3 bg-secondary rounded-lg" data-mock="true">
+                                    <input type="checkbox" class="w-4 h-4 text-primary border border-border rounded focus:ring-2 focus:ring-ring" />
+                                    <div class="flex-1">
+                                        <p class="text-sm text-foreground">Review project proposal</p>
+                                        <p class="text-xs text-muted-foreground">Tomorrow</p>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+
+                        <!-- Recent News -->
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-medium text-foreground">Tech News</h4>
+                                <button class="text-xs text-primary hover:text-primary/80" data-event="click:refreshNews">Refresh</button>
+                            </div>
+                            <div class="space-y-3">
+                                <!-- @MAP: news.map(article => ( -->
+                                <div class="p-3 bg-secondary rounded-lg cursor-pointer hover:bg-secondary/80 transition-colors" data-mock="true">
+                                    <h5 class="text-sm font-medium text-foreground leading-tight" data-bind="article.title">AI Breakthrough in Natural Language Processing</h5>
+                                    <p class="text-xs text-muted-foreground mt-1" data-bind="article.source">TechCrunch • 2h ago</p>
+                                </div>
+                                <div class="p-3 bg-secondary rounded-lg cursor-pointer hover:bg-secondary/80 transition-colors" data-mock="true">
+                                    <h5 class="text-sm font-medium text-foreground leading-tight">New JavaScript Framework Released</h5>
+                                    <p class="text-xs text-muted-foreground mt-1">Dev.to • 4h ago</p>
+                                </div>
+                                <div class="p-3 bg-secondary rounded-lg cursor-pointer hover:bg-secondary/80 transition-colors" data-mock="true">
+                                    <h5 class="text-sm font-medium text-foreground leading-tight">Cloud Computing Trends 2024</h5>
+                                    <p class="text-xs text-muted-foreground mt-1">AWS Blog • 6h ago</p>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+
+    <!-- @COMPONENT: NotificationToast [Floating notifications] -->
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="fixed top-4 right-4 max-w-sm bg-card border border-border rounded-xl shadow-2xl p-4 transform translate-x-full transition-transform duration-300 z-50" data-implementation="Show for reminders and system notifications">
+        <div class="flex items-start space-x-3">
+            <div class="w-8 h-8 bg-accent rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-bell text-accent-foreground text-sm"></i>
+            </div>
+            <div class="flex-1">
+                <h4 class="font-medium text-foreground" data-bind="notification.title" data-mock="true">Reminder</h4>
+                <p class="text-sm text-muted-foreground mt-1" data-bind="notification.message" data-mock="true">Time to revise Java concepts!</p>
+            </div>
+            <button class="text-muted-foreground hover:text-foreground" data-event="click:dismissNotification">
+                <i class="fas fa-times text-sm"></i>
+            </button>
+        </div>
+        <div class="mt-3 flex space-x-2">
+            <button class="px-3 py-1 bg-primary text-primary-foreground text-xs rounded-lg hover:bg-primary/90 transition-colors" data-event="click:markAsDone">
+                Mark Done
+            </button>
+            <button class="px-3 py-1 bg-secondary text-secondary-foreground text-xs rounded-lg hover:bg-secondary/80 transition-colors" data-event="click:snoozeReminder">
+                Snooze
+            </button>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: NotificationToast -->
+
+    <!-- @COMPONENT: VoiceModal [Voice interaction overlay] -->
+    <!-- Voice Recognition Modal -->
+    <div id="voiceModal" class="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;" data-implementation="Show during voice interaction">
+        <div class="bg-card border border-border rounded-3xl p-8 max-w-md w-full mx-4 text-center shadow-2xl">
+            <div class="relative mb-6">
+                <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto relative">
+                    <i class="fas fa-microphone text-primary-foreground text-2xl"></i>
+                    <div class="absolute inset-0 -z-10">
+                        <div class="absolute inset-0 bg-primary/30 rounded-full pulse-ring"></div>
+                        <div class="absolute inset-0 bg-primary/30 rounded-full pulse-ring" style="animation-delay: 0.5s;"></div>
+                    </div>
+                </div>
+            </div>
+            <h3 class="text-lg font-semibold text-foreground mb-2" data-mock="true">Listening...</h3>
+            <p class="text-muted-foreground mb-6" data-mock="true">Speak now or tap to stop</p>
+            
+            <!-- Voice Visualization -->
+            <div class="flex justify-center space-x-1 mb-6">
+                <div class="w-2 h-8 bg-primary rounded-full voice-wave"></div>
+                <div class="w-2 h-8 bg-primary rounded-full voice-wave" style="animation-delay: 0.1s;"></div>
+                <div class="w-2 h-8 bg-primary rounded-full voice-wave" style="animation-delay: 0.2s;"></div>
+                <div class="w-2 h-8 bg-primary rounded-full voice-wave" style="animation-delay: 0.3s;"></div>
+                <div class="w-2 h-8 bg-primary rounded-full voice-wave" style="animation-delay: 0.4s;"></div>
+            </div>
+            
+            <button class="px-6 py-2 bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/80 transition-colors" data-event="click:stopVoiceInput">
+                Stop Listening
+            </button>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: VoiceModal -->
+
+    <script>
+        // TODO: Implement comprehensive voice assistant functionality
+        (function() {
+            // Mock voice interaction states
+            let isListening = false;
+            let isProcessing = false;
+
+            // DOM elements
+            const voiceButton = document.getElementById('voiceButton');
+            const pulseRings = document.getElementById('pulseRings');
+            const voiceModal = document.getElementById('voiceModal');
+            const notificationToast = document.getElementById('notificationToast');
+            const messageInput = document.getElementById('messageInput');
+            const messagesArea = document.getElementById('messagesArea');
+
+            // Voice button functionality
+            voiceButton?.addEventListener('click', function() {
+                if (!isListening) {
+                    startVoiceInput();
+                } else {
+                    stopVoiceInput();
+                }
+            });
+
+            function startVoiceInput() {
+                isListening = true;
+                voiceButton.innerHTML = '<i class="fas fa-stop"></i>';
+                voiceButton.classList.add('bg-red-500', 'hover:bg-red-600');
+                voiceButton.classList.remove('bg-primary', 'hover:bg-primary/90');
+                pulseRings.style.display = 'block';
+                voiceModal.style.display = 'flex';
+                
+                // TODO: Implement Web Speech API
+                // if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                //     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                //     const recognition = new SpeechRecognition();
+                //     recognition.start();
+                // }
+            }
+
+            function stopVoiceInput() {
+                isListening = false;
+                voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
+                voiceButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                voiceButton.classList.add('bg-primary', 'hover:bg-primary/90');
+                pulseRings.style.display = 'none';
+                voiceModal.style.display = 'none';
+            }
+
+            // Mock auto-resize for textarea
+            messageInput?.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+
+            // Mock send message functionality
+            messageInput?.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (!message) return;
+
+                // TODO: Implement message sending logic
+                // - Add user message to chat
+                // - Send to ChatGPT API
+                // - Handle response and TTS
+                // - Update conversation history in MongoDB
+                
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+            }
+
+            // Mock notification system
+            function showNotification(title, message, type = 'info') {
+                const toast = notificationToast;
+                if (toast) {
+                    toast.querySelector('[data-bind="notification.title"]').textContent = title;
+                    toast.querySelector('[data-bind="notification.message"]').textContent = message;
+                    toast.classList.remove('translate-x-full');
+                    
+                    // Auto-dismiss after 5 seconds
+                    setTimeout(() => {
+                        toast.classList.add('translate-x-full');
+                    }, 5000);
+                }
+            }
+
+            // Mock reminder system
+            function scheduleReminder(task, time) {
+                // TODO: Implement with node-cron on backend
+                // - Store in MongoDB
+                // - Set up cron job
+                // - Send notification at scheduled time
+                console.log(`Reminder scheduled: ${task} at ${time}`);
+            }
+
+            // Mock API integrations
+            async function getWeather(location) {
+                // TODO: Implement OpenWeather API integration
+                return {
+                    location,
+                    temperature: '32°C',
+                    condition: 'Sunny',
+                    humidity: '45%'
+                };
+            }
+
+            async function getNews(category = 'tech') {
+                // TODO: Implement NewsAPI integration
+                return [
+                    { title: 'AI Breakthrough in NLP', source: 'TechCrunch' },
+                    { title: 'New JavaScript Framework', source: 'Dev.to' }
+                ];
+            }
+
+            // Mock sidebar toggle for mobile
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('[data-event="click:toggleSidebar"]')) {
+                    const sidebar = document.getElementById('sidebar');
+                    sidebar?.classList.toggle('hidden');
+                }
+            });
+
+            // Mock conversation loading
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('[data-event="click:loadConversation"]')) {
+                    // TODO: Load conversation from MongoDB and display
+                    console.log('Loading conversation...');
+                }
+            });
+
+            // Mock quick message sending
+            document.addEventListener('click', function(e) {
+                const quickMessageBtn = e.target.closest('[data-event="click:sendQuickMessage"]');
+                if (quickMessageBtn) {
+                    const message = quickMessageBtn.getAttribute('data-message');
+                    messageInput.value = message;
+                    sendMessage();
+                }
+            });
+
+            // Initialize app
+            document.addEventListener('DOMContentLoaded', function() {
+                // TODO: Initialize authentication check
+                // TODO: Load user profile and preferences  
+                // TODO: Connect to WebSocket for real-time features
+                // TODO: Set up service worker for offline mode
+                console.log('AI Voice Assistant initialized');
+            });
+
+        })();
+    </script>
+</body>
+</html>
