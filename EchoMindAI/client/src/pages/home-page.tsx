@@ -91,10 +91,10 @@ export default function HomePage() {
         onMobileToggle={() => setIsSidebarOpen(!isSidebarOpen)}
       />
 
-      {/* Main Content */}
-      <div className="flex flex-col justify-center items-center w-full">
+      {/* Chat Section (center) */}
+      <div className="flex flex-col flex-1 mx-8 xl:mx-16 justify-center items-center relative">
         {/* Top Bar */}
-        <div className="bg-card border-b border-border p-4 flex items-center justify-between">
+        <div className="bg-card border-b border-border p-4 flex items-center justify-between w-full">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
@@ -118,11 +118,11 @@ export default function HomePage() {
         </div>
 
         {/* Chat container */}
-        <div className="h-full flex flex-col justify-between">
-          <div className="w-full max-w-2xl flex flex-col items-center justify-center my-auto">
+        <div className="h-full flex flex-col justify-between w-full">
+          <div className="flex flex-col items-center justify-center my-auto w-full">
             <div
               ref={messagesContainerRef}
-              className="overflow-y-auto p-4 space-y-4 scrollbar-visible h-[400px] max-h-[60vh] border rounded-lg bg-white text-base"
+              className="overflow-y-auto p-4 space-y-4 scrollbar-visible h-[400px] max-h-[60vh] border rounded-lg bg-white text-base w-full"
             >
               {/* Placeholder messages */}
               <div className="text-muted-foreground text-center">Start a conversation...</div>
@@ -160,43 +160,43 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-
-          {/* Dashboard - Desktop only */}
-          <div className="hidden xl:block absolute right-0 top-0 h-full">
-            <Dashboard />
-          </div>
         </div>
-      </div>
 
-      {/* Voice Modal */}
-      <VoiceModal
-        isOpen={showVoiceModal}
-        onClose={() => {
-          setShowVoiceModal(false);
-          stopListening();
-        }}
-        isListening={isListening}
-        transcript={transcript}
-        onToggleListening={handleVoiceInput}
-      />
+        {/* Dashboard - Desktop only */}
+        <div className="hidden xl:block absolute right-0 top-0 h-full">
+          <Dashboard />
+        </div>
 
-      {/* Notification Toast */}
-      {notification && (
-        <NotificationToast
-          title={notification.title}
-          message={notification.message}
-          isVisible={!!notification}
-          onDismiss={() => setNotification(null)}
-          onMarkDone={() => {
-            toast({ title: "Task Completed", description: "Great job! Task marked as done." });
-            setNotification(null);
+        {/* Voice Modal */}
+        <VoiceModal
+          isOpen={showVoiceModal}
+          onClose={() => {
+            setShowVoiceModal(false);
+            stopListening();
           }}
-          onSnooze={() => {
-            toast({ title: "Reminder Snoozed", description: "I'll remind you again in 10 minutes." });
-            setNotification(null);
-          }}
+          isListening={isListening}
+          transcript={transcript}
+          onToggleListening={handleVoiceInput}
         />
-      )}
+
+        {/* Notification Toast */}
+        {notification && (
+          <NotificationToast
+            title={notification.title}
+            message={notification.message}
+            isVisible={!!notification}
+            onDismiss={() => setNotification(null)}
+            onMarkDone={() => {
+              toast({ title: "Task Completed", description: "Great job! Task marked as done." });
+              setNotification(null);
+            }}
+            onSnooze={() => {
+              toast({ title: "Reminder Snoozed", description: "I'll remind you again in 10 minutes." });
+              setNotification(null);
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
