@@ -20,7 +20,9 @@ export default function HomePage() {
   const isMobile = useIsMobile();
 
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Array<{ id: string; title: string }>>([]);
   const [messageInput, setMessageInput] = useState("");
+  const [messages, setMessages] = useState<Array<{ role: string; content: string }>>([]);
   const [showVoiceModal, setShowVoiceModal] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notification, setNotification] = useState<{ title: string; message: string } | null>(null);
@@ -50,10 +52,35 @@ export default function HomePage() {
     if (isMobile) setIsSidebarOpen(false);
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!messageInput.trim() || !currentConversationId) return;
-    console.log("Send:", messageInput);
+    // Add user message to chat immediately
+    setMessages((prev) => [...prev, { role: "user", content: messageInput }]);
+    const userMessage = messageInput;
     setMessageInput("");
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          message: userMessage,
+          conversationId: currentConversationId,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.assistantMessage?.content) {
+          setMessages((prev) => [...prev, { role: "assistant", content: data.assistantMessage.content }]);
+        }
+      } else {
+        toast({ title: "Error", description: "Failed to get response from assistant.", variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Error", description: "Network error.", variant: "destructive" });
+    }
   };
 
   const handleVoiceInput = () => {
@@ -80,6 +107,37 @@ export default function HomePage() {
     }
   }, [transcript, isListening]);
 
+  // Fetch conversations on mount and auto-create/select if none exists
+  useEffect(() => {
+    async function fetchOrCreateConversation() {
+      try {
+        const res = await fetch("/api/conversations", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          setConversations(data);
+          if (data.length > 0) {
+            setCurrentConversationId(data[0].id);
+          } else {
+            // Auto-create a new conversation
+            const createRes = await fetch("/api/conversations", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ title: "New Conversation" }),
+            });
+            if (createRes.ok) {
+              const newConv = await createRes.json();
+              setConversations([newConv]);
+              setCurrentConversationId(newConv.id);
+            }
+          }
+        }
+      } catch (err) {
+        toast({ title: "Error", description: "Failed to load or create conversation.", variant: "destructive" });
+      }
+    }
+    fetchOrCreateConversation();
+  }, []);
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Sidebar */}
@@ -138,8 +196,17 @@ export default function HomePage() {
               ref={messagesContainerRef}
               className="overflow-y-auto p-4 space-y-4 scrollbar-visible h-[400px] max-h-[60vh] border rounded-lg bg-white text-base w-full xl:max-w-2xl xl:mr-auto"
             >
-              {/* Placeholder messages */}
-              <div className="text-muted-foreground text-center">Start a conversation...</div>
+              {messages.length === 0 ? (
+                <div className="text-muted-foreground text-center">Start a conversation...</div>
+              ) : (
+                messages.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div className={`px-4 py-2 rounded-lg ${msg.role === "user" ? "bg-primary text-white" : "bg-muted text-foreground"}`}>
+                      {msg.content}
+                    </div>
+                  </div>
+                ))
+              )}
               <div ref={messagesEndRef} />
             </div>
 
