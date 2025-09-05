@@ -120,9 +120,23 @@ export default function HomePage() {
         {/* Chat container */}
         <div className="h-full flex flex-col justify-between w-full">
           <div className="flex flex-col items-center justify-center my-auto w-full">
+            {/* Quick Actions */}
+            <div className="flex flex-wrap justify-center gap-6 mb-8 w-full xl:max-w-2xl xl:mr-auto">
+              {quickActions.map((action, idx) => (
+                <button
+                  key={action.title}
+                  className="flex flex-col items-center justify-center w-32 h-24 bg-gradient-to-br from-primary/10 to-muted border border-border rounded-xl shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 cursor-pointer p-4 gap-1"
+                  onClick={() => setMessageInput(action.message)}
+                >
+                  <action.icon className="w-7 h-7 mb-2 text-primary" />
+                  <span className="font-semibold text-base mb-1 text-foreground">{action.title}</span>
+                  <span className="text-xs text-muted-foreground text-center">{action.description}</span>
+                </button>
+              ))}
+            </div>
             <div
               ref={messagesContainerRef}
-              className="overflow-y-auto p-4 space-y-4 scrollbar-visible h-[400px] max-h-[60vh] border rounded-lg bg-white text-base w-full"
+              className="overflow-y-auto p-4 space-y-4 scrollbar-visible h-[400px] max-h-[60vh] border rounded-lg bg-white text-base w-full xl:max-w-2xl xl:mr-auto"
             >
               {/* Placeholder messages */}
               <div className="text-muted-foreground text-center">Start a conversation...</div>
@@ -130,33 +144,33 @@ export default function HomePage() {
             </div>
 
             {/* Input Area */}
-            <div className="border-t border-border p-6 w-full">
-              <div className="flex items-end space-x-3">
-                <div className="flex-1 relative">
+            <div className="border-t border-border p-6 w-full bg-muted rounded-b-xl xl:max-w-2xl xl:mr-auto">
+              <div className="flex items-end gap-4 justify-start w-full">
+                <div className="flex-1 relative w-full">
                   <Textarea
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
                     placeholder="Type your message or click the mic..."
-                    className="w-full resize-none pr-12"
-                    rows={1}
+                    className="w-full resize-none pr-16 rounded-lg border border-border bg-white shadow focus:border-primary focus:ring-2 focus:ring-primary/30 transition-all"
+                    rows={2}
                   />
-                  <Button
-                    size="sm"
-                    className="absolute right-3 top-3"
+                  <button
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-primary text-white rounded-full p-2 shadow hover:bg-primary/90 transition-all disabled:bg-muted"
                     onClick={handleSendMessage}
                     disabled={!messageInput.trim()}
+                    aria-label="Send message"
                   >
-                    <Send className="w-3 h-3" />
-                  </Button>
+                    <Send className="w-5 h-5" />
+                  </button>
                 </div>
-                <Button
-                  size="lg"
-                  className={`w-12 h-12 rounded-full ${isListening ? "bg-red-500 hover:bg-red-600" : ""}`}
+                <button
+                  className={`w-12 h-12 rounded-full flex items-center justify-center bg-accent shadow hover:bg-accent/80 transition-all ${isListening ? "bg-red-500 hover:bg-red-600" : ""}`}
                   onClick={handleVoiceInput}
                   disabled={!speechSupported}
+                  aria-label="Voice input"
                 >
-                  <Mic className="w-5 h-5" />
-                </Button>
+                  <Mic className="w-6 h-6 text-primary" />
+                </button>
               </div>
             </div>
           </div>
